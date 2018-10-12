@@ -1,0 +1,11 @@
+# jbot
+spring.profiles.active=slack
+spring.jackson.property-naming-strategy=SNAKE_CASE
+logging.level.me.ramswaroop=DEBUG
+server.port=8080
+
+# slack integrations
+slackApi=https://slack.com/api
+slackBotToken=<Slack bot token here>
+# replace the below url with your slack webhook url
+slackIncomingWebhookUrl=https://slack.com
