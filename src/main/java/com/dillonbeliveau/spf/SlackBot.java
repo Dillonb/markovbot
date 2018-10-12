@@ -46,7 +46,7 @@ public class SlackBot extends Bot {
 
     @Controller(events = {EventType.MESSAGE})
     public void onPublicMessage(WebSocketSession session, Event event) throws JsonProcessingException {
-        if (event.getText().toLowerCase().contains("bustin")) {
+        if (event.getText() != null && event.getText().toLowerCase().contains("bustin")) {
             reply(session, event, "Lemme tell ya somethin'.");
             reply(session, event, "BUSTIN' MAKES ME FEEL GOOD!");
         }
