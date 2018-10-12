@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.ramswaroop.jbot.core.slack.models.Event;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
@@ -71,6 +72,7 @@ public class EventLoggingService {
     }
 
     @PreDestroy
+    @Scheduled(initialDelay = 10_000, fixedDelay = 10_000)
     void flushWriter() throws IOException {
         getWriter().flush();
     }
