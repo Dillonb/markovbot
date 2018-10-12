@@ -9,3 +9,5 @@ slackApi=https://slack.com/api
 slackBotToken=<Slack bot token here>
 # replace the below url with your slack webhook url
 slackIncomingWebhookUrl=https://slack.com
+
+logDir=/path/to/log/dir
