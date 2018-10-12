@@ -72,8 +72,12 @@ public class EventLoggingService {
     }
 
     @PreDestroy
-    @Scheduled(initialDelay = 10_000, fixedDelay = 10_000)
     void flushWriter() throws IOException {
+        getWriter().flush();
+    }
+
+    @Scheduled(initialDelay = 1000, fixedDelay = 5_000)
+    void flushWriterScheduled() throws IOException {
         getWriter().flush();
     }
 
