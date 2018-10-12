@@ -51,7 +51,7 @@ public class SlackBot extends Bot {
             reply(session, event, "BUSTIN' MAKES ME FEEL GOOD!");
         }
 
-        if ("message_deleted".equals(event.getSubtype())) {
+        if (!"message_deleted".equals(event.getSubtype())) {
             eventLoggingService.logEvent(event);
         }
     }
