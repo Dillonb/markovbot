@@ -26,7 +26,10 @@ public class SlackBot extends Bot {
     @Value("${slackBotToken}")
     private String slackBotToken;
 
-    List<String> responses = new ImmutableList.Builder<String>()
+    @Autowired
+    private MarkovModelService markovModelService;
+
+    private List<String> responses = new ImmutableList.Builder<String>()
             .add("I AM THE ONE WHO SHITPOSTS")
             .add("Bustin' makes me feel good!")
             .build();
@@ -41,11 +44,20 @@ public class SlackBot extends Bot {
 
     @Controller(events = {EventType.DIRECT_MENTION, EventType.DIRECT_MESSAGE})
     public void onReceiveDM(WebSocketSession session, Event event) {
-        reply(session, event, responses.get(random.nextInt(responses.size())));
+        //reply(session, event, responses.get(random.nextInt(responses.size())));
+        String response;
+        do {
+            response = markovModelService.generateMessage();
+        } while(response.length() < 20);
+
+
+        reply(session, event, response);
     }
 
     @Controller(events = {EventType.MESSAGE})
     public void onPublicMessage(WebSocketSession session, Event event) throws JsonProcessingException {
+        markovModelService.trainOnEvent(event);
+
         if (event.getText() != null && event.getText().toLowerCase().contains("bustin")) {
             reply(session, event, "Lemme tell ya somethin'.");
             reply(session, event, "BUSTIN' MAKES ME FEEL GOOD!");
