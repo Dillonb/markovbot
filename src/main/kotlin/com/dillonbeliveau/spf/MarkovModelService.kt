@@ -58,7 +58,7 @@ class MarkovModelService {
 
         val markovSets = words.windowed(markovDegree!! + 1) {
             set ->
-            val priorWords = ArrayList(set.subList(0, set.size - 1))
+            val priorWords = set.subList(0, set.size - 1).toList()
             val nextWord = set[set.size - 1]
 
             val result: Pair<Trigger, Transition> = Pair(FromWords(priorWords), ToWord(nextWord))
