@@ -58,11 +58,8 @@ class MarkovModelService {
 
         val markovSets = words.windowed(markovDegree!! + 1) {
             set ->
-            println("Set $set")
             val priorWords = ArrayList(set.subList(0, set.size - 1))
             val nextWord = set[set.size - 1]
-            println("Prior words: $priorWords")
-            println("Next word: $nextWord")
 
             val result: Pair<Trigger, Transition> = Pair(FromWords(priorWords), ToWord(nextWord))
 
@@ -77,8 +74,6 @@ class MarkovModelService {
             val trigger: Trigger = newTransition.first
             val transition = newTransition.second
 
-            println("Trigger: $trigger")
-            println("Transition: $transition")
 
             val existingTransitions: Map<Transition, Int> = transitions.getOrDefault(trigger, HashMap())
             val existingOccurrences = existingTransitions.getOrDefault(transition, 0)
@@ -126,8 +121,6 @@ class MarkovModelService {
     }
 
     fun getNext(trigger: Trigger): Transition {
-        println(transitions)
-        println("Getting next for trigger $trigger")
         val map = transitions[trigger]!!
         val total = map.values.sum()
         var randomVal = random.nextInt(total)
