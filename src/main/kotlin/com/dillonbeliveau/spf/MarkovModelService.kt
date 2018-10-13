@@ -48,6 +48,10 @@ class MarkovModelService {
 
         val words = text.split("\\s".toRegex()).dropLastWhile { it.isEmpty() }
 
+        if (words.isEmpty()) {
+            return
+        }
+
         val lastWords = words.takeLast(markovDegree!!)
 
 
