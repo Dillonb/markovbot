@@ -26,7 +26,7 @@ class MarkovModelService {
     @Value("\${logDir}")
     internal var logDir: String? = null
 
-    @Value("\${markovDegree:1}")
+    @Value("\${markovDegree:2}")
     internal var markovDegree: Int? = null
 
     private val random = Random()
