@@ -15,6 +15,7 @@ import kotlin.collections.ArrayList
 interface Transition
 object ToEnd : Transition
 data class ToWord(val word: String) : Transition
+data class ToWords(val words: List<String>) : Transition
 
 interface Trigger
 object FromBeginning: Trigger
@@ -54,8 +55,6 @@ class MarkovModelService {
 
         val lastWords = words.takeLast(markovDegree!!)
 
-
-
         val markovSets = words.windowed(markovDegree!! + 1) {
             set ->
             val priorWords = set.subList(0, set.size - 1).toList()
@@ -65,7 +64,7 @@ class MarkovModelService {
 
             result
         }
-                .plus(FromBeginning to ToWord(words.first()))
+                .plus(FromBeginning to ToWords(words.take(markovDegree!!)))
                 .plus(FromWords(lastWords) to ToEnd)
 
         transitions = markovSets.fold(transitions) {
@@ -136,9 +135,10 @@ class MarkovModelService {
 
         var message: List<String> = ArrayList()
 
-        while (transition !is ToEnd) {
+        while (transition !== ToEnd) {
             when (transition) {
                 is ToWord -> message = message.plus(transition.word)
+                is ToWords -> message = message.plus(transition.words)
             }
 
             transition = getNext(FromWords(message.takeLast(markovDegree!!)))
