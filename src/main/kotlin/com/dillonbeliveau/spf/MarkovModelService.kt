@@ -11,6 +11,7 @@ import java.io.IOException
 import java.util.*
 import javax.annotation.PostConstruct
 import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
 interface Transition
 object ToEnd : Transition
@@ -33,6 +34,8 @@ class MarkovModelService {
 
     private val mapper = ObjectMapper()
 
+    internal val bannedWords: Set<String> = setOf("rape", "raping", "rapist")
+
     @Throws(IOException::class)
     private fun trainOnLine(line: String) {
         val event = mapper.readValue<Event>(line, Event::class.java)
@@ -50,6 +53,10 @@ class MarkovModelService {
         val words = text.split("\\s".toRegex()).dropLastWhile { it.isEmpty() }
 
         if (words.isEmpty()) {
+            return
+        }
+
+        if (bannedWords.find { bannedWord -> words.contains(bannedWord) } != null) {
             return
         }
 
