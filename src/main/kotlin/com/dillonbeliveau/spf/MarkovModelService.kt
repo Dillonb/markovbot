@@ -56,7 +56,7 @@ class MarkovModelService {
             return
         }
 
-        if (bannedWords.find { bannedWord -> words.contains(bannedWord) } != null) {
+        if (bannedWords.any { bannedWord -> words.contains(bannedWord) }) {
             return
         }
 
