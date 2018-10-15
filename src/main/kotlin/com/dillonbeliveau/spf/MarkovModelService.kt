@@ -11,7 +11,6 @@ import java.io.IOException
 import java.util.*
 import javax.annotation.PostConstruct
 import kotlin.collections.ArrayList
-import kotlin.collections.HashSet
 
 interface Transition
 object ToEnd : Transition
@@ -30,11 +29,15 @@ class MarkovModelService {
     @Value("\${markovDegree:2}")
     internal var markovDegree: Int? = null
 
+    val nonAlphaNumeric = Regex("[^A-Za-z0-9 ]")
+
     private val random = Random()
 
     private val mapper = ObjectMapper()
 
-    internal val bannedWords: Set<String> = setOf("rape", "raping", "rapist")
+    // TODO move me to the config file, or include a text file with a pre-done much larger list
+    internal val bannedWords: Set<String> = setOf("rape", "raped", "raping", "rapist")
+    internal var transitions: Map<Trigger, Map<Transition, Int>> = HashMap()
 
     @Throws(IOException::class)
     private fun trainOnLine(line: String) {
@@ -43,8 +46,11 @@ class MarkovModelService {
 
     }
 
-    internal var transitions: Map<Trigger, Map<Transition, Int>> = HashMap()
+    private fun stripNonAlphaNumeric(str: String): String {
+        return nonAlphaNumeric.replace(str, "")
+    }
 
+    // TODO I am huge, break me up
     private fun trainOnMessage(text: String?) {
         if (text == null) {
             return
@@ -56,7 +62,9 @@ class MarkovModelService {
             return
         }
 
-        if (bannedWords.any { bannedWord -> words.contains(bannedWord) }) {
+        // If the message contains a banned word, don't train on it at all.
+        // Chances are there's other nasty stuff we don't want the bot learning in it.
+        if (words.any { word -> bannedWords.contains(stripNonAlphaNumeric(word)) }) {
             return
         }
 
@@ -91,7 +99,7 @@ class MarkovModelService {
     }
 
 
-    public fun trainOnEvent(event: Event) {
+    fun trainOnEvent(event: Event) {
         if ("message" == event.type && event.subtype == null) {
             trainOnMessage(event.text)
         }
@@ -142,6 +150,7 @@ class MarkovModelService {
 
         var message: List<String> = ArrayList()
 
+        // TODO This loop here needs to be improved. Lots of edge cases where this can break
         while (transition !== ToEnd) {
             when (transition) {
                 is ToWord -> message = message.plus(transition.word)
