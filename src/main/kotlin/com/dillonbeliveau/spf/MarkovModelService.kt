@@ -26,7 +26,7 @@ class MarkovModelService {
     @Value("\${logDir}")
     internal var logDir: String? = null
 
-    @Value("\${markovDegree:2}")
+    @Value("\${markovDegree:1}")
     internal var markovDegree: Int? = null
 
     val nonAlphaNumeric = Regex("[^A-Za-z0-9 ]")
