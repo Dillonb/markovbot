@@ -26,7 +26,7 @@ class MarkovModelService {
     @Value("\${logDir}")
     internal var logDir: String? = null
 
-    @Value("\${markovDegree:1}")
+    @Value("\${markovDegree:2}")
     internal var markovDegree: Int? = null
 
     val nonAlphaNumeric = Regex("[^A-Za-z0-9 ]")
@@ -36,7 +36,7 @@ class MarkovModelService {
     private val mapper = ObjectMapper()
 
     // TODO move me to the config file, or include a text file with a pre-done much larger list
-    internal val bannedWords: Set<String> = setOf("rape", "raped", "raping", "rapist")
+    internal val bannedWords: Set<String> = setOf("rape", "raped", "raping", "rapist", "rayped")
     internal var transitions: Map<Trigger, Map<Transition, Int>> = HashMap()
 
     @Throws(IOException::class)
@@ -139,7 +139,7 @@ class MarkovModelService {
         val total = map.values.sum()
         var randomVal = random.nextInt(total)
 
-        return map.entries.dropWhile { entry ->
+        return map.entries.shuffled().dropWhile { entry ->
             randomVal -= entry.value
             randomVal > 0
         }.first().key
