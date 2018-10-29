@@ -130,6 +130,8 @@ class MarkovModelService {
     @Throws(IOException::class)
     fun loadModel() {
         for (file in getLogFiles()) {
+
+            System.out.println("Loading " + file.getName());
             trainOnLogfile(file)
         }
     }
