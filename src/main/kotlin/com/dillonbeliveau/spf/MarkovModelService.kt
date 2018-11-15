@@ -52,7 +52,7 @@ class MarkovModelService {
 
     // TODO I am huge, break me up
     private fun trainOnMessage(text: String?) {
-        if (text == null) {
+        if (text == null || text.length < 20) {
             return
         }
 
