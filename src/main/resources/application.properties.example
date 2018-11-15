@@ -11,3 +11,4 @@ slackBotToken=<Slack bot token here>
 slackIncomingWebhookUrl=https://slack.com
 
 logDir=/path/to/log/dir
+modelCachePath=/path/to/model/cache.json

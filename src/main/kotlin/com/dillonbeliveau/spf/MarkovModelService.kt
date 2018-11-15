@@ -138,6 +138,8 @@ class MarkovModelService {
             log.info("Loading " + file.getName());
             trainOnLogfile(file)
         }
+
+        saveModel()
     }
 
     @PostConstruct
