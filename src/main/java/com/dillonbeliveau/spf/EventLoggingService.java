@@ -61,7 +61,7 @@ public class EventLoggingService {
         return logWriter;
     }
 
-    public void logEvent(Event event) {
+    void logEvent(Event event) {
         try {
             String eventJson = objectMapper.writeValueAsString(event);
 

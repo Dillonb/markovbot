@@ -4,12 +4,14 @@ package com.dillonbeliveau.spf
 import com.fasterxml.jackson.databind.ObjectMapper
 import me.ramswaroop.jbot.core.slack.models.Event
 import org.apache.commons.io.FileUtils
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.io.File
-import java.io.IOException
+import java.io.*
 import java.util.*
 import javax.annotation.PostConstruct
+import javax.annotation.PreDestroy
 import kotlin.collections.ArrayList
 
 interface Transition
@@ -23,8 +25,13 @@ data class FromWords(val words: List<String>) : Trigger
 
 @Component
 class MarkovModelService {
+    val log = LoggerFactory.getLogger(javaClass)
+
     @Value("\${logDir}")
     internal var logDir: String? = null
+
+    @Value("\${modelCachePath:}")
+    val modelCachePath: String? = null
 
     @Value("\${markovDegree:2}")
     internal var markovDegree: Int? = null
@@ -126,13 +133,47 @@ class MarkovModelService {
         }
     }
 
+    private fun generateModelFromScratch() {
+        for (file in getLogFiles()) {
+            log.info("Loading " + file.getName());
+            trainOnLogfile(file)
+        }
+    }
+
     @PostConstruct
     @Throws(IOException::class)
     fun loadModel() {
-        for (file in getLogFiles()) {
+        if (modelCachePath.isNullOrBlank()) {
+            generateModelFromScratch()
+        }
+        else {
+            val modelCacheFile = File(modelCachePath)
 
-            System.out.println("Loading " + file.getName());
-            trainOnLogfile(file)
+            if (modelCacheFile.isFile) {
+                transitions = mapper.readValue(modelCacheFile, transitions.javaClass)
+            }
+            else {
+                generateModelFromScratch()
+            }
+        }
+
+    }
+
+    private fun getWriter(filename: String): PrintWriter {
+        val fw = FileWriter(filename, true)
+        val bw = BufferedWriter(fw)
+        return PrintWriter(bw)
+    }
+
+    @PreDestroy
+    @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
+    fun saveModel() {
+        if (!modelCachePath.isNullOrBlank()) {
+            val modelWriter = getWriter(modelCachePath!!)
+            mapper.writeValue(modelWriter, transitions)
+        }
+        else {
+            log.info("No model cache path provided, not saving model.")
         }
     }
 
