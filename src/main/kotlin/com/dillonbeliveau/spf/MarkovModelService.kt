@@ -173,6 +173,7 @@ class MarkovModelService {
         if (!modelCachePath.isNullOrBlank()) {
             val modelWriter = getWriter(modelCachePath!!)
             mapper.writeValue(modelWriter, transitions)
+            log.info("Wrote model to disk")
         }
         else {
             log.info("No model cache path provided, not saving model.")
