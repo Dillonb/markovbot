@@ -1,7 +1,11 @@
 package com.dillonbeliveau.spf.service
 
 
+import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import me.ramswaroop.jbot.core.slack.models.Event
 import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
@@ -15,16 +19,54 @@ import javax.annotation.PreDestroy
 import kotlin.collections.ArrayList
 
 interface Transition
-object ToEnd : Transition
+object ToEnd : Transition {
+    override fun toString(): String {
+        return "ToEnd"
+    }
+}
 data class ToWord(val word: String) : Transition
-data class ToWords(val words: List<String>) : Transition
+data class ToWords(val words: List<String>) : Transition {
+    object Static {
+        val objectMapper = ObjectMapper()
+    }
+
+    override fun toString(): String {
+        val wordsList = Static.objectMapper.writeValueAsString(words)
+        return "ToWords(words=$wordsList)"
+    }
+}
 
 interface Trigger
-object FromBeginning: Trigger
-data class FromWords(val words: List<String>) : Trigger
+object FromBeginning: Trigger {
+    override fun toString(): String {
+        return "FromBeginning"
+    }
+}
+data class FromWords(val words: List<String>) : Trigger {
+    object Static {
+        val objectMapper = ObjectMapper()
+    }
+
+    override fun toString(): String {
+        val wordsList = Static.objectMapper.writeValueAsString(words)
+        return "FromWords(words=$wordsList)"
+    }
+}
+
+fun getObjectMapper(): ObjectMapper {
+    val objectMapper = ObjectMapper()
+    val module = SimpleModule()
+
+    module.addKeyDeserializer(Trigger::class.java, TriggerKeyDeserializer())
+    module.addKeyDeserializer(Transition::class.java, TransitionKeyDeserializer())
+
+    objectMapper.registerKotlinModule().registerModule(module)
+
+    return objectMapper
+}
 
 @Component
-class MarkovModelService {
+class MarkovModelService(private val shouldSaveModel: Boolean = true) {
     val log = LoggerFactory.getLogger(javaClass)
 
     @Value("\${logDir}")
@@ -40,7 +82,7 @@ class MarkovModelService {
 
     private val random = Random()
 
-    private val mapper = ObjectMapper()
+    private val mapper = getObjectMapper()
 
     // TODO move me to the config file, or include a text file with a pre-done much larger list
     internal val bannedWords: Set<String> = setOf("rape", "raped", "raping", "rapist", "rayped")
@@ -152,7 +194,9 @@ class MarkovModelService {
             val modelCacheFile = File(modelCachePath)
 
             if (modelCacheFile.isFile) {
-                transitions = mapper.readValue(modelCacheFile, transitions.javaClass)
+                val typeReference = object: TypeReference<HashMap<Trigger, HashMap<Transition, Int>>>() {}
+                transitions = mapper.readValue(modelCacheFile, typeReference)
+                log.info("Loaded model from cache")
             }
             else {
                 generateModelFromScratch()
@@ -170,13 +214,14 @@ class MarkovModelService {
     @PreDestroy
     @Scheduled(initialDelay = 60_000, fixedDelay = 60_000)
     fun saveModel() {
-        if (!modelCachePath.isNullOrBlank()) {
-            val modelWriter = getWriter(modelCachePath!!)
-            mapper.writeValue(modelWriter, transitions)
-            log.info("Wrote model to disk")
-        }
-        else {
-            log.info("No model cache path provided, not saving model.")
+        if (shouldSaveModel) {
+            if (!modelCachePath.isNullOrBlank()) {
+                val modelWriter = getWriter(modelCachePath!!)
+                mapper.writeValue(modelWriter, transitions)
+                log.info("Wrote model to disk")
+            } else {
+                log.info("No model cache path provided, not saving model.")
+            }
         }
     }
 
