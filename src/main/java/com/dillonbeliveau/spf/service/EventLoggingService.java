@@ -1,4 +1,4 @@
-package com.dillonbeliveau.spf;
+package com.dillonbeliveau.spf.service;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -61,7 +61,7 @@ public class EventLoggingService {
         return logWriter;
     }
 
-    void logEvent(Event event) {
+    public void logEvent(Event event) {
         try {
             String eventJson = objectMapper.writeValueAsString(event);
 

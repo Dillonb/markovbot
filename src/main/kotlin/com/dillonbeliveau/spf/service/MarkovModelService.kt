@@ -1,4 +1,4 @@
-package com.dillonbeliveau.spf
+package com.dillonbeliveau.spf.service
 
 
 import com.fasterxml.jackson.databind.ObjectMapper
