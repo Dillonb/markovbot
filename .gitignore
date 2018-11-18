@@ -4,3 +4,4 @@
 target/
 application.properties
 logs/
+model.json
