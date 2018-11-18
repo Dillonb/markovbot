@@ -162,7 +162,7 @@ class MarkovModelService {
     }
 
     private fun getWriter(filename: String): PrintWriter {
-        val fw = FileWriter(filename, true)
+        val fw = FileWriter(filename, false)
         val bw = BufferedWriter(fw)
         return PrintWriter(bw)
     }
