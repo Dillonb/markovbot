@@ -21,7 +21,6 @@ data class GraphEdge(val from: String, val to:String)
 
 fun wordListToEdges(words: List<String>): List<GraphEdge> {
     return words
-            .map { word -> "'$word'" }
             .windowed(2)
             .map { window -> GraphEdge(window.first(), window.last()) }
 }
@@ -29,17 +28,30 @@ fun wordListToEdges(words: List<String>): List<GraphEdge> {
 
 fun transitionToEdges(from: Trigger, to: Set<Transition>): List<GraphEdge> {
     val lastWordInTrigger: String = when(from) {
-        is FromBeginning -> "BEGIN"
         is FromWords ->  "'" + from.words.last() + "'"
-        else -> "???"
+        else -> {
+            if (from == FromBeginning) {
+                println("From beginning!")
+                "BEGIN"
+            }
+            else {
+                "???"
+            }
+        }
     }
 
-    val transitionEdges = to.flatMap { transitionTo ->
-        when(transitionTo) {
-            is ToEnd -> listOf(GraphEdge(lastWordInTrigger, "END"))
-            is ToWord -> listOf(GraphEdge(lastWordInTrigger, "'" + transitionTo.word + "'"))
-            is ToWords -> wordListToEdges(listOf(lastWordInTrigger))
-            else -> emptyList()
+    val transitionEdges: List<GraphEdge> = to.flatMap { transitionTo ->
+        if (transitionTo == ToEnd) {
+            listOf(GraphEdge(lastWordInTrigger, "END"))
+        }
+        else {
+            val graphEdges: List<GraphEdge> = when (transitionTo) {
+                is ToWord -> listOf(GraphEdge(lastWordInTrigger, "'" + transitionTo.word + "'"))
+                is ToWords -> wordListToEdges(listOf(lastWordInTrigger) + transitionTo.words.map { word -> "'$word'" })
+                else -> emptyList()
+            }
+
+            graphEdges
         }
     }
 
@@ -50,7 +62,7 @@ fun transitionToEdges(from: Trigger, to: Set<Transition>): List<GraphEdge> {
 
 fun triggerToEdges(trigger: Trigger): List<GraphEdge> {
     return when (trigger) {
-        is FromWords -> wordListToEdges(trigger.words)
+        is FromWords -> wordListToEdges(trigger.words.map { word -> "'$word'" })
         else -> emptyList()
     }
 }
