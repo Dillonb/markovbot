@@ -167,9 +167,21 @@ public class MarkovModelServiceImpl implements MarkovModelService {
         model.computeIfAbsent(from, key -> new MarkovTransitions()).addTransitionToEnd();
     }
 
+    private String processUsernames(String word) {
+        if (word.matches("<@U[\\dA-Z]{8}>")) {
+            // TODO, eventually we'll want to look up their actual tag from the Slack API
+            // But still wrap them in backticks so it doesn't actually tag the user.
+            return "`@someone`";
+        }
+        else {
+            return word;
+        }
+    }
+
     private void train(String line) {
         List<String> words = Arrays.stream(line.split("\\s"))
                 .filter(Strings::isNotBlank)
+                .map(this::processUsernames)
                 .map(String::toLowerCase)
                 .collect(Collectors.toList());
 
