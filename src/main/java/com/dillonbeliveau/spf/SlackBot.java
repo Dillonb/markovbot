@@ -1,7 +1,6 @@
 package com.dillonbeliveau.spf;
 
 import com.dillonbeliveau.spf.service.EventLoggingService;
-import com.dillonbeliveau.spf.service.MarkovModelService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import me.ramswaroop.jbot.core.common.Controller;
 import me.ramswaroop.jbot.core.common.EventType;
