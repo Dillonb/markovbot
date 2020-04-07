@@ -47,7 +47,11 @@ public class MarkovModelTrainer {
 
             while(iter.hasNext()) {
                 String line = iter.next();
-                markovModelService.trainOnEvent(objectMapper.readValue(line, Event.class));
+                try {
+                    markovModelService.trainOnEvent(objectMapper.readValue(line, Event.class));
+                } catch (Exception ex) {
+                    log.warn("Failed to train on line [ " + line + " ]", ex);
+                }
             }
         }
     }
