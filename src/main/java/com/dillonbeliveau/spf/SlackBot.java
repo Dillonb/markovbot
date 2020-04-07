@@ -7,6 +7,8 @@ import me.ramswaroop.jbot.core.common.EventType;
 import me.ramswaroop.jbot.core.common.JBot;
 import me.ramswaroop.jbot.core.slack.Bot;
 import me.ramswaroop.jbot.core.slack.models.Event;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
@@ -22,6 +24,8 @@ public class SlackBot extends Bot {
 
     @Autowired
     private MarkovModelService markovModelService;
+
+    private static final Logger log = LoggerFactory.getLogger(SlackBot.class);
 
     public String getSlackToken() {
         return slackBotToken;
@@ -45,7 +49,11 @@ public class SlackBot extends Bot {
 
     @Controller(events = {EventType.MESSAGE})
     public void onPublicMessage(WebSocketSession session, Event event) throws JsonProcessingException {
-        markovModelService.trainOnEvent(event);
+        try {
+            markovModelService.trainOnEvent(event);
+        } catch (Exception ex) {
+            log.warn("Failure to train on message!");
+        }
 
         if (!"message_deleted".equals(event.getSubtype())) {
             eventLoggingService.logEvent(event);
